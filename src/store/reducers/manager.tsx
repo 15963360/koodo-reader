@@ -1,3 +1,5 @@
+import { localProUserInfo } from "../../constants/localProUser";
+
 const initState = {
   books: null,
   plugins: null,
@@ -6,8 +8,9 @@ const initState = {
   isSearch: false,
   isShowPopupNote: false,
   isAboutOpen: false,
-  isAuthed: false,
-  userInfo: null,
+  // 本地定制版：默认即为已登录 Pro 用户，关闭全部会员拦截
+  isAuthed: true,
+  userInfo: localProUserInfo,
   userConfig: null,
   isSettingOpen: false,
   viewMode: "card",

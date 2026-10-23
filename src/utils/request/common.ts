@@ -6,7 +6,7 @@ import {
   CommonTool,
   ConfigService,
 } from "../../assets/lib/kookit-extra-browser.min";
-import { getServerRegion, reloadManager } from "../common";
+import { getServerRegion } from "../common";
 import { resetReaderRequest } from "./reader";
 import { resetUserRequest } from "./user";
 import { resetThirdpartyRequest } from "./thirdparty";
@@ -43,10 +43,13 @@ export const checkStableUpdate = async () => {
   return res.data.log;
 };
 export const handleExitApp = async () => {
-  toast.error(i18n.t("Authorization failed, please login again"));
-  await handleClearToken();
-  //路由到login页面
-  reloadManager();
+  // 本地定制版：官方账号接口鉴权失败时不再清空本地凭据、也不强制重载页面。
+  // 否则未登录状态下任何云端 401（AI 词典/翻译/同步等）都会误删
+  // WebDAV、本地文件夹等数据源 token，破坏用户离线书库。
+  console.warn("[local-pro] official account api authorization failed, ignored");
+  toast.error(i18n.t("Authorization failed, please login again"), {
+    id: "local-pro-auth-failed",
+  });
 };
 export const handleClearToken = async () => {
   await TokenService.deleteToken("is_authed");

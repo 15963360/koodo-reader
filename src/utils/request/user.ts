@@ -16,6 +16,7 @@ import i18n from "../../i18n";
 import { handleExitApp } from "./common";
 import { getServerRegion, vexComfirmAsync } from "../common";
 import TokenService from "../storage/tokenService";
+import { localProUserInfo } from "../../constants/localProUser";
 declare var window: any;
 let userRequest: UserRequest | undefined;
 
@@ -119,6 +120,10 @@ export const loginRegister = async (service: string, code: string) => {
   return response;
 };
 export const getTempToken = async () => {
+  // 本地定制版：未登录官方账号时不请求云端（云端 401 会触发清空本地配置）
+  if (!(await TokenService.getToken("access_token"))) {
+    return { code: 200, data: { access_token: "" }, msg: "OK" } as any;
+  }
   let userRequest = await getUserRequest();
   let response = await userRequest.getTempToken();
   if (response.code === 200) {
@@ -132,14 +137,22 @@ export const getTempToken = async () => {
   }
 };
 export const fetchUserInfo = async () => {
+  // 本地定制版：未登录官方账号时直接返回内置 Pro 用户，避免 401 退出应用
+  if (!(await TokenService.getToken("access_token"))) {
+    return { code: 200, data: localProUserInfo, msg: "OK" } as any;
+  }
   let userRequest = await getUserRequest();
   let response = await userRequest.getUserInfo();
   if (response.code === 401 || response.code === 10002) {
-    handleExitApp();
+    return { code: 200, data: localProUserInfo, msg: "OK" } as any;
   }
   return response;
 };
 export const updateUserConfig = async (config: any) => {
+  // 本地定制版：无官方账号时不写云端配置，也不清空本地配置
+  if (!(await TokenService.getToken("access_token"))) {
+    return;
+  }
   let userRequest = await getUserRequest();
   let response = await userRequest.updateUserConfig(config);
   if (response.code === 200) {
