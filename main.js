@@ -59,6 +59,11 @@ const {
   getBiometricCapability,
   promptBiometricAuth,
 } = require("./src/utils/main/biometric-util");
+const {
+  requestJson: neatReaderRequestJson,
+  downloadToTempFile: neatReaderDownloadFile,
+} = require("./src/utils/main/neatreader-util");
+const { postJson: ankiConnectRequest } = require("./src/utils/main/anki-util");
 const { getVoicePlugin } = require("./src/utils/plugins/main/registry");
 const ttsCacheUtil = require("./src/utils/plugins/main/voice/ttsCache");
 const configDir = app.getPath("userData");
@@ -795,6 +800,18 @@ const createMainWin = () => {
       result.definition !== null
       ? String(result.definition)
       : "";
+  });
+  // NeatReader 云端书库：渲染进程通过主进程请求官方 API（规避生产环境 CORS）
+  ipcMain.handle("neatreader-request", async (event, args) => {
+    return await neatReaderRequestJson(args || {});
+  });
+  // NeatReader / 阿里云 OSS：下载原书与封面到临时目录，返回本地路径
+  ipcMain.handle("neatreader-download", async (event, args) => {
+    return await neatReaderDownloadFile(args || {});
+  });
+  // AnkiConnect：主进程代发本机 127.0.0.1 请求，避免 file:// 页面被 CORS 拦截
+  ipcMain.handle("anki-connect", async (event, args) => {
+    return await ankiConnectRequest(args || {});
   });
   ipcMain.handle("partial-md5", (event, filePath) => {
     const validatedPath = filePath;

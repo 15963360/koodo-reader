@@ -18,6 +18,7 @@ import TextSetting from "../../../containers/settings/textSetting";
 import DictSetting from "../../../containers/settings/dictSetting";
 import MoreSetting from "../../../containers/settings/moreSetting";
 import ShortcutSetting from "../../../containers/settings/shortcutSetting";
+import NeatReaderSetting from "../../../containers/settings/neatreaderSetting";
 import { isElectron } from "react-device-detect";
 class SettingDialog extends React.Component<
   SettingInfoProps,
@@ -96,6 +97,8 @@ class SettingDialog extends React.Component<
         return "Local dictionary";
       case "more":
         return "More settings";
+      case "neatreader":
+        return "NeatReader cloud library";
       default:
         return "Setting";
     }
@@ -135,6 +138,12 @@ class SettingDialog extends React.Component<
             )}
 
             {this.renderSidebarItem("sync", "icon-sync", "Sync and backup", "")}
+            {this.renderSidebarItem(
+              "neatreader",
+              "icon-cloud",
+              "NeatReader cloud library",
+              "18px"
+            )}
             {this.renderSidebarItem(
               "more",
               "icon-more",
@@ -236,6 +245,8 @@ class SettingDialog extends React.Component<
               <DictSetting />
             ) : this.props.settingMode === "more" ? (
               <MoreSetting />
+            ) : this.props.settingMode === "neatreader" ? (
+              <NeatReaderSetting />
             ) : (
               <PluginSetting />
             )}

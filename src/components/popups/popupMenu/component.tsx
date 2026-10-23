@@ -11,6 +11,7 @@ import {
 } from "../../../assets/lib/kookit-extra-browser.min";
 import {
   getSelection,
+  getSelectionRuby,
   getSelectionSentence,
 } from "../../../utils/reader/mouseEvent";
 import { createHighlight } from "../../../utils/reader/noteUtil";
@@ -222,6 +223,7 @@ class PopupMenu extends React.Component<PopupMenuProps, PopupMenuStates> {
       case "dict":
         this.props.handleOriginalText(text);
         this.props.handleOriginalSentence(getSelectionSentence(format));
+        this.props.handleOriginalReading(getSelectionRuby(format));
         this.props.handleMenuMode("dict");
         this.props.handleOpenMenu(true);
         break;

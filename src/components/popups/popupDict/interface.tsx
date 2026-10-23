@@ -3,6 +3,7 @@ import PluginModel from "../../../models/Plugin";
 export interface PopupDictProps {
   originalText: string;
   originalSentence: string;
+  originalReading: string;
   plugins: PluginModel[];
   isAuthed: boolean;
   isDockedRight: boolean;
@@ -26,4 +27,5 @@ export interface PopupDictState {
   aiAnswer: string;
   isAiWaiting: boolean;
   isAiStreaming: boolean;
+  isAnkiSending: boolean;
 }

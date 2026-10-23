@@ -13,6 +13,7 @@ const mapStateToProps = (state: stateType) => {
   return {
     originalText: state.reader.originalText,
     originalSentence: state.reader.originalSentence,
+    originalReading: state.reader.originalReading,
     plugins: state.manager.plugins,
     isAuthed: state.manager.isAuthed,
     currentBook: state.book.currentBook,

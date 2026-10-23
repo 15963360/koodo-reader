@@ -13,6 +13,7 @@ import {
   handleFetchNotes,
   handleOriginalText,
   handleOriginalSentence,
+  handleOriginalReading,
   handleNoteKey,
   handleQuoteText,
 } from "../../../store/actions";
@@ -35,6 +36,7 @@ const actionCreator = {
   handleFetchNotes,
   handleOriginalText,
   handleOriginalSentence,
+  handleOriginalReading,
   handleChangeDirection,
   handleNoteKey,
   handlePopupOptionDialog,

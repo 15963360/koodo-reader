@@ -51,6 +51,54 @@ export const getSelection = (format: string, bookKey?: string) => {
   return text;
 };
 
+/**
+ * Collect the ruby (furigana / reading) annotations that belong to the current
+ * selection, in the shape "base(reading)". It is used by the Anki integration to
+ * fill the "reading" field even when the word itself has no ruby markup at all.
+ */
+export const getSelectionRuby = (format: string, bookKey?: string): string => {
+  let docs = getIframeDoc(format, bookKey);
+  const readings: string[] = [];
+  const collect = (ruby: Element) => {
+    const base = Array.from(ruby.childNodes)
+      .filter((node) => !["rt", "rp"].includes(node.nodeName.toLowerCase()))
+      .map((node) => node.textContent || "")
+      .join("")
+      .trim();
+    const rt = Array.from(ruby.querySelectorAll("rt"))
+      .map((node) => node.textContent || "")
+      .join("")
+      .trim();
+    if (!base || !rt) return;
+    const item = `${base}(${rt})`;
+    if (!readings.includes(item)) readings.push(item);
+  };
+  for (let i = 0; i < docs.length; i++) {
+    let doc = docs[i];
+    if (!doc) continue;
+    let sel = doc.getSelection();
+    if (!sel || sel.rangeCount === 0 || !sel.toString().trim()) continue;
+    for (let r = 0; r < sel.rangeCount; r++) {
+      const range = sel.getRangeAt(r);
+      // Rubies fully contained in the selection
+      const fragment = range.cloneContents();
+      fragment.querySelectorAll("ruby").forEach((ruby) => collect(ruby));
+      // Rubies only partially covered (selection starts/ends inside one)
+      [
+        range.startContainer,
+        range.endContainer,
+      ].forEach((node: Node) => {
+        const el =
+          node.nodeType === Node.TEXT_NODE ? node.parentElement : (node as Element);
+        const ruby = el?.closest ? el.closest("ruby") : null;
+        if (ruby) collect(ruby);
+      });
+    }
+    if (readings.length) break;
+  }
+  return readings.join(" ");
+};
+
 export const getSelectionSentence = (
   format: string,
   bookKey?: string

@@ -14,6 +14,7 @@ import {
 import toast from "react-hot-toast";
 import {
   getSelection,
+  getSelectionRuby,
   getSelectionSentence,
   searchInTheBook,
 } from "../../../utils/reader/mouseEvent";
@@ -76,6 +77,9 @@ class PopupOption extends React.Component<PopupOptionProps> {
     this.props.handleOriginalText(getSelection(this.props.currentBook.format));
     this.props.handleOriginalSentence(
       getSelectionSentence(this.props.currentBook.format)
+    );
+    this.props.handleOriginalReading(
+      getSelectionRuby(this.props.currentBook.format)
     );
     this.props.handleOpenMenu(true);
   };

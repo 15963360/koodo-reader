@@ -21,6 +21,7 @@ const initState = {
   noteKey: "",
   originalText: "",
   originalSentence: "",
+  originalReading: "",
   quoteText: "",
   htmlBook: null,
   scale: ConfigService.getReaderConfig("scale") || "1",
@@ -144,6 +145,11 @@ export function reader(
       return {
         ...state,
         originalSentence: action.payload,
+      };
+    case "HANDLE_ORIGINAL_READING":
+      return {
+        ...state,
+        originalReading: action.payload,
       };
     case "HANDLE_NAV_LOCK":
       return {

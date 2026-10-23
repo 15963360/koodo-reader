@@ -23,6 +23,9 @@ export function handleQuoteText(quoteText: string) {
 export function handleOriginalSentence(originalSentence: string) {
   return { type: "HANDLE_ORIGINAL_SENTENCE", payload: originalSentence };
 }
+export function handleOriginalReading(originalReading: string) {
+  return { type: "HANDLE_ORIGINAL_READING", payload: originalReading };
+}
 export function handleHighlight(highlight: HighlightValue) {
   return { type: "HANDLE_HIGHLIGHT", payload: highlight };
 }

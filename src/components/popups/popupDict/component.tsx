@@ -33,9 +33,13 @@ import {
   executeCustomDictionary,
   isCustomRendererPlugin,
 } from "../../../utils/plugins/customPlugin";
+import { addAnkiNote, formatAnkiError } from "../../../utils/anki/ankiConnect";
 class PopupDict extends React.Component<PopupDictProps, PopupDictState> {
   private aiTextAccumulator: string = "";
   private updateInterval: ReturnType<typeof setInterval> | null = null;
+  // AI 词典流式返回时，Anki 自动同步要等答案生成完再写入
+  private pendingAnkiWord: { word: string; sentence: string } | null = null;
+  private lastAiAnswer: string = "";
 
   constructor(props: PopupDictProps) {
     super(props);
@@ -51,6 +55,7 @@ class PopupDict extends React.Component<PopupDictProps, PopupDictState> {
       aiAnswer: "",
       isAiWaiting: false,
       isAiStreaming: false,
+      isAnkiSending: false,
     };
   }
 
@@ -83,6 +88,8 @@ class PopupDict extends React.Component<PopupDictProps, PopupDictState> {
     }
   }
   async handleLookUp(text: string) {
+    this.pendingAnkiWord = null;
+    this.lastAiAnswer = "";
     let originalText = text.replace(/(\r\n|\n|\r)/gm, "").replace(/-/gm, "");
     this.setState({ word: originalText });
     // let prototype = "";
@@ -131,13 +138,88 @@ class PopupDict extends React.Component<PopupDictProps, PopupDictState> {
       {}
     );
     let chapter = bookLocation.chapterTitle || "";
-    let bookName = this.props.currentBook.name || "";
     let word = new DictHistory(bookKey, text, chapter, sentence);
     await DatabaseService.saveRecord(word, "words");
     let wordSyncManager = new WordSyncManager(ConfigService);
     wordSyncManager.syncWordToEudic(text, sentence);
-    wordSyncManager.syncWordToAnki(text, sentence, bookName, chapter, dictText);
     wordSyncManager.syncWordToMaiMemo(text);
+    // Anki 交给自建 AnkiConnect 模块，直接写入用户的 modelofluna 模板
+    if (ConfigService.getReaderConfig("isEnableAnkiSync") === "yes") {
+      const definition = (dictText || this.lastAiAnswer || "").trim();
+      if (definition) {
+        this.syncToAnki(text, sentence, definition).catch((error) => {
+          console.warn("Anki auto sync failed:", formatAnkiError(error));
+        });
+      } else {
+        // 释义由 AI 词典异步生成，等流式结束再写入
+        this.pendingAnkiWord = { word: text, sentence: sentence };
+      }
+    }
+  };
+
+  flushPendingAnki = (definition: string) => {
+    const pending = this.pendingAnkiWord;
+    this.pendingAnkiWord = null;
+    if (!pending || !definition.trim()) return;
+    this.syncToAnki(pending.word, pending.sentence, definition).catch((error) => {
+      console.warn("Anki auto sync failed:", formatAnkiError(error));
+    });
+  };
+
+  // 当前词典的显示名，用于 dictionaryInfo 字段
+  getDictDisplayName = () => {
+    const key = ConfigService.getReaderConfig("dictService");
+    if (!key) return "";
+    const plugin = this.props.plugins.find((item) => item.key === key);
+    return plugin ? this.props.t(plugin.displayName) : "";
+  };
+
+  syncToAnki = async (
+    word: string,
+    sentence: string,
+    dictText: string = ""
+  ) => {
+    await addAnkiNote({
+      word: word,
+      reading: this.props.originalReading || "",
+      sentence: sentence || this.props.originalSentence || "",
+      definition: dictText || "",
+      dictName: this.getDictDisplayName(),
+      bookName: this.props.currentBook.name || "",
+      chapter:
+        ConfigService.getObjectConfig(
+          this.props.currentBook.key,
+          "recordLocation",
+          {}
+        )?.chapterTitle || "",
+    });
+  };
+
+  handleAddToAnki = async () => {
+    if (this.state.isAnkiSending) return;
+    const word = this.state.word || this.props.originalText;
+    if (!word) return;
+    this.setState({ isAnkiSending: true });
+    try {
+      await this.syncToAnki(
+        word,
+        this.props.originalSentence,
+        this.state.aiAnswer || this.state.dictText
+      );
+      toast.success(this.props.t("Added to Anki"));
+    } catch (error) {
+      const reason = formatAnkiError(error);
+      if (reason === "NOT_RUNNING") {
+        toast.error(this.props.t("AnkiConnect is not running, please start Anki"));
+      } else if (reason === "MODEL_NOT_FOUND") {
+        toast.error(this.props.t("The Anki note type modelofluna was not found"));
+      } else if (reason === "DUPLICATE") {
+        toast.error(this.props.t("This word already exists in Anki"));
+      } else {
+        toast.error(this.props.t("Added to Anki failed") + ": " + reason);
+      }
+    }
+    this.setState({ isAnkiSending: false });
   };
 
   handleDict = async (text: string): Promise<string> => {
@@ -185,6 +267,7 @@ class PopupDict extends React.Component<PopupDictProps, PopupDictState> {
           }
         );
         this.stopUpdateInterval();
+        this.lastAiAnswer = this.aiTextAccumulator;
         this.aiTextAccumulator = "";
         this.setState({
           isAiWaiting: false,
@@ -318,10 +401,13 @@ class PopupDict extends React.Component<PopupDictProps, PopupDictState> {
         }
       );
       this.stopUpdateInterval();
+      const answer = this.aiTextAccumulator;
+      this.lastAiAnswer = answer;
       this.aiTextAccumulator = "";
       if (res && res.done) {
         this.setState({ isAiWaiting: false, isAiStreaming: false });
       }
+      this.flushPendingAnki(answer);
     } catch (error) {
       this.stopUpdateInterval();
       this.aiTextAccumulator = "";
@@ -487,6 +573,21 @@ class PopupDict extends React.Component<PopupDictProps, PopupDictState> {
             <span>:</span>
             <span>{this.state.prototype}</span>
           </div>
+          {!this.state.isAddNew && (
+            <button
+              className="dict-anki-button"
+              disabled={this.state.isAnkiSending}
+              title={this.props.t("Add to Anki")}
+              onClick={this.handleAddToAnki}
+            >
+              <span className="icon-export"></span>
+              <span>
+                {this.state.isAnkiSending
+                  ? this.props.t("Adding")
+                  : this.props.t("Add to Anki")}
+              </span>
+            </button>
+          )}
           {this.state.isAddNew && (
             <div
               style={{

@@ -295,6 +295,15 @@ class DataSetting extends React.Component<SettingInfoProps, SettingInfoState> {
         savedValues = existingConfig;
       }
       // Build defaultValues record: key -> saved value or placeholder
+      // AnkiConnect 默认就在本机 127.0.0.1:8765，牌组固定为 SIN，这里直接预填，
+      // 并把 apiKey 视为可选（本地 Anki 通常没有配置 API Key）。
+      const isAnkiSync = item.propName === "isEnableAnkiSync";
+      const ankiDefaults: Record<string, string> = {
+        host: "127.0.0.1",
+        port: "8765",
+        deckName: "SIN",
+      };
+      const optionalKeys = isAnkiSync ? ["apiKey"] : [];
       const defaultValues: Record<string, any> = {};
       const labelsMap: Record<string, string> = {};
       for (const field of item.authFields as Array<{
@@ -302,8 +311,11 @@ class DataSetting extends React.Component<SettingInfoProps, SettingInfoState> {
         label: string;
         placeholder: string;
       }>) {
+        const fallback = isAnkiSync ? ankiDefaults[field.key] : undefined;
         defaultValues[field.key] =
-          savedValues[field.key] ?? "[" + this.props.t(field.placeholder) + "]";
+          savedValues[field.key] ??
+          fallback ??
+          (optionalKeys.includes(field.key) ? "" : "[" + this.props.t(field.placeholder) + "]");
         labelsMap[field.key] = this.props.t(field.label);
       }
 
@@ -320,9 +332,9 @@ class DataSetting extends React.Component<SettingInfoProps, SettingInfoState> {
       }
 
       // Validate that all fields are filled
-      const allFilled = Object.values(result).every(
-        (v) => v && String(v).trim().length > 0
-      );
+      const allFilled = Object.keys(result)
+        .filter((key) => !optionalKeys.includes(key))
+        .every((key) => result[key] && String(result[key]).trim().length > 0);
       if (!allFilled) {
         toast.error(this.props.t("Please fill in all fields"));
         return;

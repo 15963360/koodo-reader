@@ -1,0 +1,234 @@
+.neatreader-setting-container {
+  margin: 10px 25px 80px 25px;
+  font-size: 14px;
+}
+
+.neatreader-panel {
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  border-radius: 10px;
+  padding: 18px;
+  margin-bottom: 20px;
+}
+
+.neatreader-panel-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.neatreader-panel-desc {
+  font-size: 13px;
+  line-height: 1.6;
+  opacity: 0.65;
+  margin: 0 0 16px 0;
+}
+
+.neatreader-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.neatreader-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.neatreader-field label {
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.neatreader-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  background: transparent;
+  color: inherit;
+  outline: none;
+}
+
+.neatreader-input:focus {
+  border-color: var(--color-theme-color, #0179ca);
+}
+
+.neatreader-btn {
+  cursor: pointer;
+  font-size: 13px;
+  padding: 7px 16px;
+  border-radius: 6px;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  background: transparent;
+  color: inherit;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+.neatreader-btn:hover:not(:disabled) {
+  opacity: 0.75;
+}
+
+.neatreader-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.neatreader-btn.primary {
+  background: var(--color-theme-color, #0179ca);
+  border-color: var(--color-theme-color, #0179ca);
+  color: #fff;
+}
+
+.neatreader-btn.small {
+  padding: 4px 12px;
+  font-size: 12px;
+}
+
+.neatreader-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0 14px 0;
+  font-size: 12px;
+  opacity: 0.55;
+}
+
+.neatreader-divider::before,
+.neatreader-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(128, 128, 128, 0.25);
+}
+
+.neatreader-status {
+  margin: 14px 0 0 0;
+  font-size: 12px;
+  opacity: 0.65;
+  word-break: break-all;
+}
+
+.neatreader-account {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+}
+
+.neatreader-account-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.neatreader-account-icon {
+  font-size: 26px;
+  opacity: 0.75;
+}
+
+.neatreader-account-name {
+  font-size: 15px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.neatreader-account-desc {
+  font-size: 12px;
+  opacity: 0.6;
+  margin-top: 3px;
+}
+
+.neatreader-account-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.neatreader-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 10px;
+  justify-content: center;
+  font-size: 13px;
+  opacity: 0.6;
+}
+
+.neatreader-loading {
+  animation: neatreader-spin 1s linear infinite;
+}
+
+@keyframes neatreader-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.neatreader-book-list {
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.neatreader-book-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-top: 1px solid rgba(128, 128, 128, 0.12);
+}
+
+.neatreader-book-item:first-child {
+  border-top: none;
+}
+
+.neatreader-book-cover {
+  width: 40px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(128, 128, 128, 0.12);
+}
+
+.neatreader-book-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.neatreader-book-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.neatreader-book-name {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.neatreader-book-meta {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  opacity: 0.55;
+  margin-top: 4px;
+}

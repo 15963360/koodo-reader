@@ -7,6 +7,7 @@ import {
   handleRenderNoteFunc,
   handleOriginalText,
   handleOriginalSentence,
+  handleOriginalReading,
   handleFetchNotes,
 } from "../../../store/actions";
 import { connect } from "react-redux";
@@ -35,6 +36,7 @@ const actionCreator = {
   handleRenderNoteFunc,
   handleOriginalText,
   handleOriginalSentence,
+  handleOriginalReading,
   handleFetchNotes,
 };
 export default connect(
